@@ -1,19 +1,12 @@
-
+use std::collections::HashSet;
 use crate::parser::read_input_file;
 
 fn entry_is_safe(entry: &Vec<i32>) -> bool {
-    let differences: Vec<i32> = entry.windows(2).map(|s: &[i32]| s[1] - s[0]).collect();
+    let differences: HashSet<i32> = entry.windows(2).map(|s: &[i32]| s[1] - s[0]).collect();
 
-    if !differences.iter().map(|&x| x.abs()).all(|x| x<=3 && x>=1){
-        return false
-    }
+    differences.is_subset(&HashSet::<i32>::from([1,2,3])) || 
+    differences.is_subset(&HashSet::<i32>::from([-1,-2,-3]))
 
-
-    let first = differences.get(0).unwrap().clone();
-    let all_elems_have_same_sign: bool = differences.iter().all(|&s| ((first > 0) && (s > 0)) ||
-                                                                          ((first < 0) && (s < 0)) );
-
-    all_elems_have_same_sign
 }
 
 fn damp_entry_is_safe(entry: &Vec<i32>) -> bool {

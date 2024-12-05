@@ -1,6 +1,8 @@
 use std::env;
 use std::fs::read_to_string;
 
+use strum_macros::EnumIter;
+
 
 /// Enum `ReadDirection` stores a direction that text was read in.
 /// 
@@ -16,6 +18,7 @@ use std::fs::read_to_string;
 /// GoNorthWest: 321  
 /// GoSouthWest: 123  
 /// etc.
+#[derive(EnumIter)]
 pub enum ReadDirection {
     GoNorth=1,
     GoNorthEast=2,

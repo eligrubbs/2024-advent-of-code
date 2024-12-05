@@ -1,18 +1,14 @@
 use regex::Regex;
+use strum::IntoEnumIterator;
 
-use crate::parser::{parse_input, parse_direction, ReadDirection::*};
+use crate::parser::{parse_direction, parse_input, ReadDirection};
 
 
 pub fn day_4_p1_soln() -> i32{
     let mut count: i32 = 0;
-    count += xmas_count_in_dir(parse_direction(GoNorth));
-    count += xmas_count_in_dir(parse_direction(GoNorthEast));
-    count += xmas_count_in_dir(parse_direction(GoEast));
-    count += xmas_count_in_dir(parse_direction(GoSouthEast));
-    count += xmas_count_in_dir(parse_direction(GoSouth));
-    count += xmas_count_in_dir(parse_direction(GoSouthWest));
-    count += xmas_count_in_dir(parse_direction(GoWest));
-    count += xmas_count_in_dir(parse_direction(GoNorthWest));
+    for dir in ReadDirection::iter(){
+        count += xmas_count_in_dir(parse_direction(dir));
+    }
 
     count
 }

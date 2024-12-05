@@ -27,12 +27,15 @@ pub enum ReadDirection {
     GoNorthWest=8,
 }
 
-
-pub fn parse_direction(dir: ReadDirection) -> Vec<String>{
+pub fn parse_input() -> String {
     let mut path = env::current_dir().unwrap();
     path.push("data");
     path.push("input.txt");
-    let file_str: String = read_to_string(path.to_str().unwrap()).unwrap();
+    read_to_string(path.to_str().unwrap()).unwrap()
+}
+
+pub fn parse_direction(dir: ReadDirection) -> Vec<String>{
+    let file_str: String = parse_input();
 
     lists_by_dir(&file_str, dir)
 }
@@ -178,6 +181,9 @@ fn build_south_west_dir(content: &str) -> Vec<String> {
 fn build_north_east_dir(content: &str) -> Vec<String> {
     build_south_west_dir(content).iter().map(|x| x.chars().rev().collect::<String>()).collect()
 }
+
+
+
 
 
 #[cfg(test)]

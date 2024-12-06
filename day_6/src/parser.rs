@@ -21,7 +21,6 @@ fn parse_input(content: &str) -> Vec<Vec<bool>>{
 
 fn get_init_guard_pos(content: &str) -> Option<(usize, usize)> {
     let lines: Vec<&str> = content.lines().collect();
-    let (mut x, mut y) = (0,0);
     for row in 0..lines.len() {
         let bob = lines[row];
         for col in 0..bob.len() {

@@ -10,7 +10,7 @@ pub fn parse_day_6_input() -> (Vec<Vec<bool>>, (usize,usize)){
     (parse_input(&raw), get_init_guard_pos(&raw).unwrap())
 }
 
-fn parse_input(content: &str) -> Vec<Vec<bool>>{
+pub fn parse_input(content: &str) -> Vec<Vec<bool>> {
     content.lines()
            .map(|line| line.chars()
                                  .map(|chr| if chr == '#' {true} else {false})
@@ -19,7 +19,7 @@ fn parse_input(content: &str) -> Vec<Vec<bool>>{
     .collect::<Vec<Vec<bool>>>()
 }
 
-fn get_init_guard_pos(content: &str) -> Option<(usize, usize)> {
+pub fn get_init_guard_pos(content: &str) -> Option<(usize, usize)> {
     let lines: Vec<&str> = content.lines().collect();
     for row in 0..lines.len() {
         let bob = lines[row];

@@ -69,10 +69,12 @@ fn does_map_loop(map: &Vec<Vec<bool>>, start_pos: &Coord, start_dir: &Direction,
 
 
         let (temp_pos, temp_dir) = take_step(&map, &pos, &dir);
+
         // I could have turned (temp_pos same), or I could have moved forward (temp_pos different)
         // If I am about to move forward, check if it would loop of this was an obstacle
-        // Only do this recursive call if I am main caller.
-        if temp_pos != pos && is_main && coord_in_bounds(map, &temp_pos){
+        // Only do this recursive call if I am main caller. Also, it can't be the first position.
+        // Can't place an obstacle in a position that the guard has already walked onto.
+        if temp_pos != pos && is_main && coord_in_bounds(map, &temp_pos) && !places_been.contains(&temp_pos){
             // Convert my next step into an obstacle
             let mut temp_map: Vec<Vec<bool>> = map.clone();
             temp_map[i32_to_usize(temp_pos.row)][i32_to_usize(temp_pos.col)] = true;
@@ -81,7 +83,7 @@ fn does_map_loop(map: &Vec<Vec<bool>>, start_pos: &Coord, start_dir: &Direction,
                 potential_loop_obstacles.insert(temp_pos);
             }
         }
-        
+
         // move forward
         (pos,dir) = (temp_pos, temp_dir);
     }

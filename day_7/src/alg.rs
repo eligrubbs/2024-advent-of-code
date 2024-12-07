@@ -5,7 +5,14 @@ use crate::parser::parse_day_7_input;
 enum Operation {
     Add,
     Mul,
-    // Ext, // to add after Add/Mul work for p1
+    Ext, // to add after Add/Mul work for p1
+}
+
+fn ext(left: i64, right: i64) -> i64 {
+    let digits_to_shift: u32 = right.checked_ilog10().unwrap_or(0) + 1;
+    let base: i64 = 10;
+    let shifted_left: i64 = left * base.pow(digits_to_shift);
+    right + shifted_left
 }
 
 fn greater_than_after_add(left: i64, right: i64, total: i64) -> bool {
@@ -109,4 +116,17 @@ pub fn day_7_p1_soln() -> i64 {
     }
 
     comb_score
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ext_operation() {
+        assert_eq!(156, ext(15, 6));
+        assert_eq!(150, ext(15, 0));
+        assert_eq!(6435, ext(6, 435));
+    }
 }

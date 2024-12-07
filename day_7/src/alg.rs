@@ -16,11 +16,15 @@ fn ext(left: i64, right: i64) -> i64 {
 }
 
 fn greater_than_after_add(left: i64, right: i64, total: i64) -> bool {
-    if left + right > total{ true } else { false }
+    if left + right > total { true } else { false }
 }
 
 fn greater_than_after_mul(left: i64, right: i64, total: i64) -> bool {
-    if left * right > total{ true } else { false }
+    if left * right > total { true } else { false }
+}
+
+fn greater_than_after_ext(left: i64, right: i64, total: i64) -> bool {
+    if ext(left, right) > total { true } else { false }
 }
 
 fn greater_than_after(oper: Operation, left: i64, right: i64, total: i64) -> bool {
@@ -28,6 +32,7 @@ fn greater_than_after(oper: Operation, left: i64, right: i64, total: i64) -> boo
    match oper {
     Add => { greater_than_after_add(left, right, total) }
     Mul => { greater_than_after_mul(left, right, total) }
+    Ext => { greater_than_after_ext(left, right, total) }
    }
 }
 
@@ -36,10 +41,11 @@ fn comb(oper: Operation, left: i64, right: i64) -> i64 {
     match oper {
         Add => {left + right},
         Mul => {left * right},
+        Ext => {ext(left, right)}
     }
 }
 
-fn get_all_operations_possible(line: &Vec<i64>) -> Vec<Vec<Operation>> {
+fn get_all_operations_possible(line: &Vec<i64>, p2: bool) -> Vec<Vec<Operation>> {
     use Operation::*;
     let mut all_operations: Vec<Vec<Operation>> = vec![vec![Add; line.len() - 1]];
     for i in 0..(line.len()-1) {
@@ -48,12 +54,22 @@ fn get_all_operations_possible(line: &Vec<i64>) -> Vec<Vec<Operation>> {
             let mut new_op: Vec<Operation> = operation.clone();
             // multiplication
             new_op[i] = Mul;
-            ops_added.push(new_op);
+            ops_added.push(new_op.clone());
+            if p2 {
+                // extension
+                new_op[i] = Ext;
+                ops_added.push(new_op.clone());
+            }
         }
         all_operations.extend(ops_added);
     }
-    let base: usize = 2;
+    let mut base: usize = 2;
+    if p2 {
+        base= 3;
+    }
+
     assert_eq!(all_operations.len(), base.pow(u32::try_from(line.len()-1).unwrap()));
+    
     all_operations
 }
 
@@ -91,8 +107,8 @@ fn operations_equal_total(total: i64, line: &Vec<i64>, operations: &Vec<Operatio
 /// 
 /// Returns the list of operations (true => add, false => multiply) that make it so.
 /// Returns None if it is not possible.
-fn line_can_match_total(line: &Vec<i64>, total: i64) -> Option<Vec<Operation>> {
-    let all_operations: Vec<Vec<Operation>> = get_all_operations_possible(line);
+fn line_can_match_total(line: &Vec<i64>, total: i64, p2: bool) -> Option<Vec<Operation>> {
+    let all_operations: Vec<Vec<Operation>> = get_all_operations_possible(line, p2);
     for operations in &all_operations {
         let none_if_equal: Option<usize> = operations_equal_total(total, line, operations);
         if none_if_equal.is_none() {
@@ -102,13 +118,15 @@ fn line_can_match_total(line: &Vec<i64>, total: i64) -> Option<Vec<Operation>> {
     None
 }
 
+
+
 pub fn day_7_p1_soln() -> i64 {
     let comb_lines: Vec<(i64, Vec<i64>)> = parse_day_7_input();
     let mut valid_lines_inds: Vec<usize> = vec![];
     let mut valid_operations: Vec<Vec<Operation>> = vec![];
     let mut comb_score = 0;
     for (i, (total, line)) in comb_lines.iter().enumerate() {
-        if let Some(bob) = line_can_match_total(line, *total) {
+        if let Some(bob) = line_can_match_total(line, *total, false) {
             valid_operations.push(bob);
             valid_lines_inds.push(i);
             comb_score += total;
@@ -117,6 +135,23 @@ pub fn day_7_p1_soln() -> i64 {
 
     comb_score
 }
+
+pub fn day_7_p2_soln() -> i64 {
+    let comb_lines: Vec<(i64, Vec<i64>)> = parse_day_7_input();
+    let mut valid_lines_inds: Vec<usize> = vec![];
+    let mut valid_operations: Vec<Vec<Operation>> = vec![];
+    let mut comb_score = 0;
+    for (i, (total, line)) in comb_lines.iter().enumerate() {
+        if let Some(bob) = line_can_match_total(line, *total, true) {
+            valid_operations.push(bob);
+            valid_lines_inds.push(i);
+            comb_score += total;
+        }
+    }
+
+    comb_score
+}
+
 
 
 #[cfg(test)]

@@ -1,6 +1,13 @@
 use std::iter::zip;
 use crate::parser::parse_day_7_input;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Operation {
+    Add,
+    Mul,
+    // Ext, // to add after Add/Mul work for p1
+}
+
 fn greater_than_after_add(left: i64, right: i64, total: i64) -> bool {
     if left + right > total{ true } else { false }
 }
@@ -9,25 +16,31 @@ fn greater_than_after_mul(left: i64, right: i64, total: i64) -> bool {
     if left * right > total{ true } else { false }
 }
 
-fn greater_than_after(is_add: bool, left: i64, right: i64, total: i64) -> bool {
-    if is_add {
-        greater_than_after_add(left, right, total)
-    } else {
-        greater_than_after_mul(left, right, total)
+fn greater_than_after(oper: Operation, left: i64, right: i64, total: i64) -> bool {
+   use Operation::*;
+   match oper {
+    Add => { greater_than_after_add(left, right, total) }
+    Mul => { greater_than_after_mul(left, right, total) }
+   }
+}
+
+fn comb(oper: Operation, left: i64, right: i64) -> i64 {
+    use Operation::*;
+    match oper {
+        Add => {left + right},
+        Mul => {left * right},
     }
 }
 
-fn comb(is_add: bool, left: i64, right: i64) -> i64 {
-    if is_add { left + right } else { left * right }
-}
-
-fn get_all_operations_possible(line: &Vec<i64>) -> Vec<Vec<bool>> {
-    let mut all_operations: Vec<Vec<bool>> = vec![vec![true; line.len() - 1]];
+fn get_all_operations_possible(line: &Vec<i64>) -> Vec<Vec<Operation>> {
+    use Operation::*;
+    let mut all_operations: Vec<Vec<Operation>> = vec![vec![Add; line.len() - 1]];
     for i in 0..(line.len()-1) {
-        let mut ops_added: Vec<Vec<bool>> = vec![];
+        let mut ops_added: Vec<Vec<Operation>> = vec![];
         for operation in &all_operations {
-            let mut new_op: Vec<bool> = operation.clone();
-            new_op[i] = false;
+            let mut new_op: Vec<Operation> = operation.clone();
+            // multiplication
+            new_op[i] = Mul;
             ops_added.push(new_op);
         }
         all_operations.extend(ops_added);
@@ -45,7 +58,7 @@ fn get_all_operations_possible(line: &Vec<i64>) -> Vec<Vec<bool>> {
 /// Returns:
 /// None: None if the line equals total with the operations
 /// usize: the index of the operation that makes combo go over total, or operations.len() if they are less than total
-fn operations_equal_total(total: i64, line: &Vec<i64>, operations: &Vec<bool>) -> Option<usize> {
+fn operations_equal_total(total: i64, line: &Vec<i64>, operations: &Vec<Operation>) -> Option<usize> {
     // true => add, false => mult
     assert!(line.len() - 1 == operations.len());
     let mut left: i64 = line[0];
@@ -71,8 +84,8 @@ fn operations_equal_total(total: i64, line: &Vec<i64>, operations: &Vec<bool>) -
 /// 
 /// Returns the list of operations (true => add, false => multiply) that make it so.
 /// Returns None if it is not possible.
-fn line_can_match_total(line: &Vec<i64>, total: i64) -> Option<Vec<bool>> {
-    let all_operations: Vec<Vec<bool>> = get_all_operations_possible(line);
+fn line_can_match_total(line: &Vec<i64>, total: i64) -> Option<Vec<Operation>> {
+    let all_operations: Vec<Vec<Operation>> = get_all_operations_possible(line);
     for operations in &all_operations {
         let none_if_equal: Option<usize> = operations_equal_total(total, line, operations);
         if none_if_equal.is_none() {
@@ -85,7 +98,7 @@ fn line_can_match_total(line: &Vec<i64>, total: i64) -> Option<Vec<bool>> {
 pub fn day_7_p1_soln() -> i64 {
     let comb_lines: Vec<(i64, Vec<i64>)> = parse_day_7_input();
     let mut valid_lines_inds: Vec<usize> = vec![];
-    let mut valid_operations: Vec<Vec<bool>> = vec![];
+    let mut valid_operations: Vec<Vec<Operation>> = vec![];
     let mut comb_score = 0;
     for (i, (total, line)) in comb_lines.iter().enumerate() {
         if let Some(bob) = line_can_match_total(line, *total) {

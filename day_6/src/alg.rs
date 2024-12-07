@@ -141,11 +141,8 @@ fn turn_right_90_deg(dir: &Direction) -> Direction {
 fn maybe_move_direction(map: &Vec<Vec<bool>>, pos: &Coord, dir: &Direction, temp_ob: Option<&Coord>) -> Option<Coord>{
     use Direction::*;
     //check bounds
-    match dir {
-        North => {if pos.row == 0 {return None;}},
-        East => {if pos.col == map[0].len()-1 {return None;}},
-        South => {if pos.row == map.len()-1 {return None;}},
-        West => {if pos.col == 0 {return None;}},
+    if check_pos_out_of_bounds(map, pos, dir){
+        return None;
     }
 
     let new_pos: Coord = match dir {
@@ -155,9 +152,9 @@ fn maybe_move_direction(map: &Vec<Vec<bool>>, pos: &Coord, dir: &Direction, temp
         West => {Coord{row: pos.row, col: pos.col-1}},
     };
 
-    if temp_ob.is_none() {
+    if temp_ob.is_none() { // use original map
         if map[new_pos.row][new_pos.col] { None } else { Some(new_pos) }
-    } else {
+    } else { // use original map plus this new obstacle
         let temp: Coord = Coord{row: new_pos.row, col: new_pos.col};
         if map[new_pos.row][new_pos.col] || temp == *temp_ob.unwrap() { None } else { Some(new_pos) }
     }
@@ -204,5 +201,11 @@ mod tests {
 
         let (_, count) = track_path(&map, pos);
         assert_eq!(count, (1,1));
+    }
+
+    #[test]
+    fn test_coord_equal() {
+        assert_eq!(Coord{row:10, col: 132},
+                    Coord{row: 10, col: 132})
     }
 }

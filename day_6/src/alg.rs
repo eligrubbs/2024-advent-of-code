@@ -140,6 +140,8 @@ fn i32_to_usize(x: i32) -> usize {
     <i32 as TryInto<usize>>::try_into(x).unwrap()
 }
 
+
+
 #[cfg(test)]
 mod tests {
     use crate::parser::{parse_input, get_init_guard_pos};

@@ -2,6 +2,10 @@ use std::collections::{HashMap, HashSet};
 
 use crate::parser::{Coord, day_8_parse_input};
 
+/*
+I tried to anticipate what p2 might ask of me, so I ended up over-engineering the solution, storing lots of data I didn't need.
+
+*/
 
 
 pub fn day_8_p1_soln() -> i32 {

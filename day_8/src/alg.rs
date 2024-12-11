@@ -8,7 +8,17 @@ pub fn day_8_p1_soln() -> i32 {
     let (input, bounds) = day_8_parse_input();
     let mut unique_spots: HashSet<Coord> = HashSet::new();
     for (_antenna_type, antennas) in input.iter() {
-        let bob: HashMap<Coord, Vec<(&Coord, &Coord)>> = get_frequency_antinodes(antennas, bounds);
+        let bob: HashMap<Coord, Vec<(&Coord, &Coord)>> = get_frequency_antinodes(antennas, bounds, true);
+        unique_spots.extend(bob.keys());
+    }
+    unique_spots.len() as i32
+}
+
+pub fn day_8_p2_soln() -> i32 {
+    let (input, bounds) = day_8_parse_input();
+    let mut unique_spots: HashSet<Coord> = HashSet::new();
+    for (_antenna_type, antennas) in input.iter() {
+        let bob: HashMap<Coord, Vec<(&Coord, &Coord)>> = get_frequency_antinodes(antennas, bounds, false);
         unique_spots.extend(bob.keys());
     }
     unique_spots.len() as i32
@@ -16,9 +26,9 @@ pub fn day_8_p1_soln() -> i32 {
 
 
 /// Given a list of antennas, return all of the created antinodes and the lsit of pairs of antennas that created them.
-fn get_frequency_antinodes(antennas: &Vec<Coord>, bounds: (i32,i32)) -> HashMap<Coord, Vec<(&Coord, &Coord)>>{
+fn get_frequency_antinodes(antennas: &Vec<Coord>, bounds: (i32,i32), is_p1: bool) -> HashMap<Coord, Vec<(&Coord, &Coord)>>{
     let pairs: Vec<(&Coord, &Coord)> = pairs_from_vec(&antennas);
-    antinodes_with_parent_pairs(pairs, bounds)
+    antinodes_with_parent_pairs(pairs, bounds, is_p1)
 }
 
 
@@ -36,10 +46,14 @@ fn pairs_from_vec(input: &Vec<Coord>) -> Vec<(&Coord, &Coord)> {
 
 /// Finds all antinodes given a list of pairs of coordinates.  
 /// Returns a HashMap with (k: antinode, v: Vec<(pairs of coords that create an antinode here)>))
-fn antinodes_with_parent_pairs<'a>(all_pairs: Vec<(&'a Coord, &'a Coord)>, bounds: (i32,i32)) -> HashMap<Coord, Vec<(&'a Coord, &'a Coord)>> {
+fn antinodes_with_parent_pairs<'a>(all_pairs: Vec<(&'a Coord, &'a Coord)>, bounds: (i32,i32), is_p1: bool) -> HashMap<Coord, Vec<(&'a Coord, &'a Coord)>> {
     let mut result: HashMap<Coord, Vec<(&'a Coord, &'a Coord)>> = HashMap::new();
     for pair in all_pairs {
-        let pairs_antinodes: Vec<Coord> = get_antinodes(pair.0, pair.1, bounds);
+        let pairs_antinodes: Vec<Coord> = if is_p1 {
+            get_antinodes(pair.0, pair.1, bounds)
+        } else {
+            get_antinodes_resonant_harmonics_accounted_for(pair.0, pair.1, bounds)
+        };
         for antinode in pairs_antinodes {
             result.entry(antinode)
                   .and_modify(|parents| parents.push(pair))
@@ -64,7 +78,7 @@ fn antinodes_with_parent_pairs<'a>(all_pairs: Vec<(&'a Coord, &'a Coord)>, bound
 fn get_antinodes(lc: &Coord, rc: &Coord, bounds:(i32,i32)) -> Vec<Coord> {
     let mut results: Vec<Coord> = vec![];
 
-    // (dx,dy) pointing towards l from r
+    // (dx,dy) pointing towards lc from rc
     let (dx, dy) = (lc.c - rc.c, lc.r - rc.r);
 
     let outside_closer_to_l: Coord = Coord{r: lc.r + dy, c: lc.c + dx};
@@ -90,4 +104,29 @@ fn get_antinodes(lc: &Coord, rc: &Coord, bounds:(i32,i32)) -> Vec<Coord> {
 
 fn coord_in_bounds(cd: &Coord, max_row: i32, max_col: i32) -> bool {
     (cd.c >= 0 && cd.c <= max_col) && (cd.r >= 0 && cd.r <= max_row)
+}
+
+
+fn get_antinodes_resonant_harmonics_accounted_for(lc: &Coord, rc: &Coord, bounds:(i32,i32)) -> Vec<Coord> {
+    let mut results: Vec<Coord> = vec![];
+
+    // pointing towards lc from rc
+    let (dx, dy) = (lc.c - rc.c, lc.r - rc.r);
+
+    // go backwards from lc
+    let mut curr_coord: Coord = lc.clone();
+    while coord_in_bounds(&curr_coord, bounds.0, bounds.1) {
+        results.push(curr_coord);
+        // update with dy/dx
+        curr_coord = Coord{r: curr_coord.r + dy, c: curr_coord.c + dx};
+    }
+
+    // go forwards from lc until out of bounds
+    curr_coord = rc.clone();
+    while coord_in_bounds(&curr_coord, bounds.0, bounds.1) {
+        results.push(curr_coord);
+        curr_coord = Coord{r: curr_coord.r - dy, c: curr_coord.c - dx};
+    }
+
+    results
 }

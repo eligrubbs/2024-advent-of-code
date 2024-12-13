@@ -1,14 +1,72 @@
 use std::{env, fmt, fs::read_to_string, str::Chars};
 
+pub fn day_9_p1_soln() -> u64 {
+    let input: Vec<DiskBlock> = parse_day_9_input();
+    calc_check_sum(&input)
+}
+
+/// take content with dots scattered throughout and calcualte the checksum
+fn calc_check_sum(contents: &Vec<DiskBlock>) -> u64 {
+    let mut check_sum: u64 = 0;
+
+    let mut content: Vec<DiskBlock> = contents.clone();
+    println!("Reversing");
+    rearrange_empty_blocks(&mut content);
+    println!("Calculating checksum");
+
+    let mut iterator = content.iter().enumerate();
+
+    while let Some((ind, block)) = iterator.next() {
+        if block.is_free { continue }
+        check_sum += block.id.unwrap() * (ind as u64);
+    }
+    check_sum
+
+}
+
+fn rearrange_empty_blocks(blocks: &mut Vec<DiskBlock>) {
+    let mut dot_ptr: usize = ind_first_empty(blocks);
+    let mut end_ptr: usize = ind_last_full(blocks);
+
+    while dot_ptr < end_ptr {
+        //swap pointers
+        blocks.swap(dot_ptr, end_ptr);
+        // increment ptrs
+        dot_ptr = ind_first_empty(blocks);
+        end_ptr = ind_last_full(blocks);
+    }
+
+}
+
+fn ind_first_empty(blocks: &Vec<DiskBlock>) -> usize {
+    blocks.iter()
+          .enumerate()
+          .filter(|(_, &block)| block.is_free)
+          .map(|(ind, _)| ind)
+          .min().unwrap()
+}
+
+fn ind_last_full(blocks: &Vec<DiskBlock>) -> usize {
+    let first_ind: usize = blocks.iter()
+    .rev()
+    .enumerate()
+    .filter(|(_, &block)| !block.is_free && !block.tried_to_move)
+    .map(|(ind, _)| ind)
+    .min().unwrap();
+
+    (blocks.len()-1) - first_ind
+}
+
+////////////////////////////
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub struct DiskBlock {
+struct DiskBlock {
     // if is_free is true, id is Some, else None
-    pub is_free: bool,
-    pub id: Option<u64>,
+    is_free: bool,
+    id: Option<u64>,
     // part 2
-    pub group_size: usize,
-    pub tried_to_move: bool,
+    group_size: usize,
+    tried_to_move: bool,
 
 }
 impl fmt::Display for DiskBlock {
@@ -29,7 +87,7 @@ fn free_disk(group_size: usize) -> DiskBlock {
     DiskBlock{is_free: true, id: None, group_size, tried_to_move: false}
 }
 
-pub fn get_x_full_disks(num: usize, id: u64) -> Vec<DiskBlock> {
+fn get_x_full_disks(num: usize, id: u64) -> Vec<DiskBlock> {
     let mut result: Vec<DiskBlock> = vec![];
     for _ in 0..num {
         result.push(full_disk(id, num));
@@ -37,7 +95,7 @@ pub fn get_x_full_disks(num: usize, id: u64) -> Vec<DiskBlock> {
     result
 }
 
-pub fn get_x_free_disks(num: usize) -> Vec<DiskBlock> {
+fn get_x_free_disks(num: usize) -> Vec<DiskBlock> {
     let mut result: Vec<DiskBlock> = vec![];
     for _ in 0..num {
         result.push(free_disk(num));
@@ -45,7 +103,7 @@ pub fn get_x_free_disks(num: usize) -> Vec<DiskBlock> {
     result
 }
 
-pub fn parse_day_9_input() -> Vec<DiskBlock> {
+fn parse_day_9_input() -> Vec<DiskBlock> {
     let mut path = env::current_dir().unwrap();
     path.push("data");
     path.push("input.txt");
@@ -83,46 +141,4 @@ fn parse_input(content: &str) -> Vec<DiskBlock> {
 
     assert_eq!(content.chars().map(|ch| ch.to_digit(10).unwrap()).sum::<u32>() as u64, result.len() as u64);
     result
-}
-
-
-#[cfg(test)]
-mod test {
-    use std::vec;
-
-    use super::*;
-
-    #[test]
-    fn test_parse() {
-        let input: &str = "233313312141413140204";
-        let mut result: Vec<DiskBlock> = vec![];
-        result.extend(get_x_full_disks(2, 0));
-        result.extend(get_x_free_disks(3));
-
-        result.extend(get_x_full_disks(3, 1));
-        result.extend(get_x_free_disks(3));
-
-        result.extend(get_x_full_disks(1, 2));
-        result.extend(get_x_free_disks(3));
-
-        result.extend(get_x_full_disks(3, 3));
-        result.extend(get_x_free_disks(1));
-
-        result.extend(get_x_full_disks(2, 4));
-        result.extend(get_x_free_disks(1));
-
-        result.extend(get_x_full_disks(4, 5));
-        result.extend(get_x_free_disks(1));
-
-        result.extend(get_x_full_disks(4, 6));
-        result.extend(get_x_free_disks(1));
-
-        result.extend(get_x_full_disks(3, 7));
-        result.extend(get_x_free_disks(1));
-        result.extend(get_x_full_disks(4, 8));
-        result.extend(get_x_full_disks(2, 9));
-        result.extend(get_x_full_disks(4, 10));
-
-        assert_eq!(result, parse_input(input))
-    }
 }

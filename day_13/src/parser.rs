@@ -1,6 +1,6 @@
 use regex::Regex;
 
-pub fn parse_input(content: &str) -> Vec<Vars> {
+pub fn parse_input(content: &str, is_p2: bool) -> Vec<Vars> {
     let mut result: Vec<Vars> = vec![];
 
     let mut line_iter = content.lines();
@@ -13,7 +13,8 @@ pub fn parse_input(content: &str) -> Vec<Vars> {
 
         let (a_x, a_y) = nums_from_str(a, &a_regex);
         let (b_x, b_y) = nums_from_str(b, &b_regex);
-        let (p_x, p_y) = nums_from_str(p, &prize_regex);
+        let (mut p_x, mut p_y) = nums_from_str(p, &prize_regex);
+        if is_p2 { (p_x, p_y) = (p_x+10000000000000, p_y+10000000000000); }
         let m: Vars = Vars::from((a_x,a_y, b_x, b_y, p_x,p_y));
         result.push(m);
     }
@@ -57,7 +58,7 @@ mod test {
         let input = "Button A: X+94, Y+34
 Button B: X+22, Y+67
 Prize: X=8400, Y=5400";
-        let result: Vec<Vars> = parse_input(input);
+        let result: Vec<Vars> = parse_input(input, false);
         let ans: Vec<Vars> = vec![Vars::from((94,34, 22,67, 8400,5400))];
 
         assert_eq!(result, ans);
@@ -69,7 +70,7 @@ Prize: X=8400, Y=5400
 Button A: X+26, Y+66
 Button B: X+67, Y+21
 Prize: X=12748, Y=12176";
-        let result: Vec<Vars> = parse_input(input);
+        let result: Vec<Vars> = parse_input(input, false);
         let ans: Vec<Vars> = vec![Vars::from((94,34, 22,67, 8400,5400)),
         Vars::from((26,66, 67,21, 12748,12176))];
 

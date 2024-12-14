@@ -7,7 +7,7 @@ pub fn day_13_p1_soln() -> i64 {
     path.push("data");
     path.push("input.txt");
     let raw: String = read_to_string(path.to_str().unwrap()).unwrap();
-    let all_probs: Vec<Vars> = parse_input(&raw);
+    let all_probs: Vec<Vars> = parse_input(&raw, false);
     let mut cost = 0;
     for prob in all_probs {
         cost += solve_one_machine(prob);
@@ -16,7 +16,7 @@ pub fn day_13_p1_soln() -> i64 {
 }
 
 
-fn solve_one_machine(vs: Vars) -> i64 {
+pub fn solve_one_machine(vs: Vars) -> i64 {
     let mut cost: i64 = 0;
 
     let a_numerator: i64 = (vs.p_x * vs.b_y) - (vs.p_y * vs.b_x);

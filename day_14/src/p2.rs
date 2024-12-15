@@ -2,9 +2,8 @@
 // The tree is likely the only shape where they are all bunched up like that, spreading from there into randomness
 // Therefore I look for the minimum after 1000 seconds and then print at what second the first minimum occured
 
-use std::{collections::HashMap, env, fs::read_to_string, i32};
-use regex::Regex;
-use crate::p1::{Robot, Quadrant, parse_input, get_saftey_factor, move_all_for_x_secs};
+use std::{env, fs::read_to_string, i32};
+use crate::p1::{Robot, parse_input, get_saftey_factor, move_all_for_x_secs};
 
 pub fn day_14_p2_soln() -> u32 {
     let mut path = env::current_dir().unwrap();

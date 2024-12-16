@@ -1,4 +1,4 @@
-use std::{str::Chars, env, fs::read_to_string};
+use std::{env, fs::read_to_string, str::Chars};
 
 
 pub fn day_9_p2_soln() -> u64 {
@@ -12,7 +12,6 @@ fn calc_checksum(input: &Vec<DiskBlock>) -> u64 {
     for block in input.iter() {
         if !block.is_free {
             for ind in block.pos..(block.pos+block.size) {
-                println!("{} {} {} {}", block.id.unwrap(), ind, block.size, block.tried_to_swap);
                 checksum += (ind as u64) * block.id.unwrap();
             }
         }
@@ -27,6 +26,9 @@ fn swap_blocks(input: &mut Vec<DiskBlock>) {
 
     while dot_ptr < end_ptr {
         'search_for_swap: for free_ind in dot_ptr..input.len() {
+            if free_ind >= end_ptr {
+                break 'search_for_swap;
+            }
             let free_block: &DiskBlock = input.get(free_ind).unwrap();
             if !free_block.is_free { 
                 continue;
@@ -40,6 +42,7 @@ fn swap_blocks(input: &mut Vec<DiskBlock>) {
                 let temp_pos = input.get(end_ptr).unwrap().pos;
                 input.get_mut(end_ptr).unwrap().pos = input.get(free_ind).unwrap().pos;
                 input.get_mut(free_ind).unwrap().pos = temp_pos;
+                input.get_mut(free_ind).unwrap().size = end_size;
                 //
                 input.swap(free_ind, end_ptr);
                 //if there is a remainder of spaces, insert empty space after
@@ -51,7 +54,7 @@ fn swap_blocks(input: &mut Vec<DiskBlock>) {
             }
         }
         // I am here if I swapped or not, check if I swapped
-        if !input.get(end_ptr).unwrap().is_free { // I didn't swap
+        if !input.get(end_ptr).unwrap().is_free && !input.get(end_ptr).unwrap().id.is_none() { // I didn't swap
             input.get_mut(end_ptr).unwrap().tried_to_swap = true;
         }
         // move on to next dudes
@@ -59,7 +62,6 @@ fn swap_blocks(input: &mut Vec<DiskBlock>) {
         end_ptr = get_last_block(input);
     }
 
-    
 }
 
 fn get_first_dot(input: &Vec<DiskBlock>) -> usize {
@@ -94,6 +96,19 @@ struct DiskBlock {
     pos: usize, // position of first elem in hypothetical expanded setting
     size: usize, // number of blocks in this disk block
     tried_to_swap: bool,
+}
+
+impl DiskBlock {
+    fn print(&self) -> String {
+        let chr: String = if self.id.is_none() { ".".to_string() } else {  self.id.unwrap().to_string() };
+        vec![chr.chars().nth(0).unwrap(); self.size].iter().collect()
+    }
+}
+
+fn print_blocks(blocks: &Vec<DiskBlock>) {
+    let mut st: String = String::new();
+    blocks.iter().map(|x| x.print()).for_each(|x| st.push_str(&x));
+    println!("{}", st);
 }
 
 /// content is a string that only contains number chars 0-9.  
@@ -146,11 +161,7 @@ mod test {
     fn test_spec_example() {
         let raw_input: &str = "2333133121414131402";
         let mut input: Vec<DiskBlock> = parse_input(&raw_input);
-        for block in &input {
-            if !block.is_free {
-                println!("{} {} {} {}", block.id.unwrap(), block.pos, block.size, block.tried_to_swap);
-            }
-        }
+
         swap_blocks(&mut input);
         let check = calc_checksum(&input);
 

@@ -14,7 +14,6 @@ pub fn spots_from_all_paths(map: &ValueMap, start: Coord, gamma: i64) -> usize {
     let mut curr_dir: Direction = Direction::E;
     let mut curr_pos: Coord = start;
 
-    // let mut curr_st: State = map.map.get(&(curr_pos, curr_dir)).unwrap().clone();
     let mut keys_to_check: HashSet<(Coord, Direction)> = HashSet::from([(start, curr_dir)]);
 
     while keys_to_check.len() != 0 {
@@ -29,6 +28,9 @@ pub fn spots_from_all_paths(map: &ValueMap, start: Coord, gamma: i64) -> usize {
 
         // add all possible best actions to keys_to_check
         let curr_st: &State = map.map.get(&(curr_pos, curr_dir)).unwrap();
+        if curr_st.typ == 'E' {// if at end. continue!
+            continue;
+        }
         let max_val: i64 = max_action_value(map, curr_st, gamma);
         zip(map.actions_available(curr_st).iter(), action_values(map, curr_st, gamma)).for_each(|(act, act_val)| {
             if act_val == max_val {
@@ -37,12 +39,6 @@ pub fn spots_from_all_paths(map: &ValueMap, start: Coord, gamma: i64) -> usize {
             }
         });
     }
-    // while curr_st.typ != 'E' {
-    //     let next_act: Action = best_action_at(map, &curr_st, gamma);
-    //     let (next_st,_) = map.do_action(&curr_st, &next_act);
-
-    //     curr_st = next_st;
-    // }
 
     best_spots.len()
 }

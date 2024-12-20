@@ -55,7 +55,6 @@ pub fn parse_input(content: &str) -> (ValueMap, Coord, Coord) {
 
 pub fn value_iteration(map: &mut ValueMap, gamma: i64) {
     let theta: i64 = 0; // probably have to change this
-    let mut iterations: u32 = 0;
 
     'value_loop: loop {
         let mut delta: i64 = 0;
@@ -72,7 +71,6 @@ pub fn value_iteration(map: &mut ValueMap, gamma: i64) {
 
             delta = max(delta,(old_val - new_val).abs());
         }
-        iterations +=1;
         if delta <= theta {
             break 'value_loop;
         }

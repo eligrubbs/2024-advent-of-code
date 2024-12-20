@@ -1,15 +1,10 @@
 /* Use Reinforcement Learning (Value Iteration) to find optimal route(s)
 
-1. Construct matrix of state and actions and rewards and transition probabilities
+This solution might be a little overkill but it is what I want to use.  
+There is an inverse matrix algorithm that I could use if I bothered to codify everything into matrices
+and figure out some rust package.
 
-State Enum:
-    1. Coordinate
-    2. Direction
-
-Value Map: State -> value
-
-Discount factor gamma: 1
-
+Disocunt Factor: 1
 
 */
 use std::env;
@@ -21,7 +16,7 @@ use strum::IntoEnumIterator;
 use crate::grid::{Coord, Direction};
 
 
-pub fn day_16_p1_soln() -> i64 {
+pub fn day_16_p1_soln() -> (ValueMap, Coord, i64) {
     let mut path = env::current_dir().unwrap();
     path.push("data");
     path.push("input.txt");
@@ -31,7 +26,8 @@ pub fn day_16_p1_soln() -> i64 {
     let (mut v_map, start, _) = parse_input(&raw);
 
     value_iteration(&mut v_map, gamma);
-    trace_path(&v_map, start, gamma)
+    let cost: i64 = trace_path(&v_map, start, gamma);
+    (v_map, start, cost)
 }
 
 pub fn trace_path(map: &ValueMap, start: Coord, gamma: i64) -> i64 {
@@ -71,7 +67,7 @@ pub fn value_iteration(map: &mut ValueMap, gamma: i64) {
         for key in keys {
             let curr_state: &State = map.map.get(&key).unwrap();
             let old_val: i64 = curr_state.val;
-            let new_val: i64 = calc_bellman_update(map, curr_state, gamma);
+            let new_val: i64 = max_action_value(map, curr_state, gamma);
             map.map.get_mut(&key).unwrap().val = new_val;
 
             delta = max(delta,(old_val - new_val).abs());
@@ -84,13 +80,19 @@ pub fn value_iteration(map: &mut ValueMap, gamma: i64) {
 
 }
 
-fn calc_bellman_update(map: &ValueMap, st: &State, gamma: i64) -> i64 {
+pub fn max_action_value(map: &ValueMap, st: &State, gamma: i64) -> i64 {
     map.actions_available(st).iter().map(|act| {
         act.reward() + (gamma * map.do_action(st, act).0.val)
     }).max().unwrap()
 }
 
-fn best_action_at(map: &ValueMap, st: &State, gamma: i64) -> Action {
+pub fn action_values(map: &ValueMap, st: &State, gamma: i64) -> Vec<i64> {
+    map.actions_available(st).iter().map(|act| {
+        act.reward() + (gamma * map.do_action(st, act).0.val)
+    }).collect()
+}
+
+pub fn best_action_at(map: &ValueMap, st: &State, gamma: i64) -> Action {
     let available: Vec<Action> = map.actions_available(st);
 
     let max_val: usize = available.iter().map(|act| {

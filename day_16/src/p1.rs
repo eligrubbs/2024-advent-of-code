@@ -11,7 +11,7 @@ use std::env;
 use std::fs::read_to_string;
 use std::cmp::max;
 use itertools::Itertools;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use strum::IntoEnumIterator;
 use crate::grid::{Coord, Direction};
 
@@ -23,9 +23,9 @@ pub fn day_16_p1_soln() -> (ValueMap, Coord, i64) {
     let raw: String = read_to_string(path.to_str().unwrap()).unwrap();
 
     let gamma: i64 = 1;
-    let (mut v_map, start, _) = parse_input(&raw);
+    let (mut v_map, start, end) = parse_input(&raw);
 
-    value_iteration(&mut v_map, gamma);
+    value_iteration(&mut v_map, end, gamma);
     let cost: i64 = trace_path(&v_map, start, gamma);
     (v_map, start, cost)
 }
@@ -53,17 +53,20 @@ pub fn parse_input(content: &str) -> (ValueMap, Coord, Coord) {
     (value_map, start, end)
 }
 
-pub fn value_iteration(map: &mut ValueMap, gamma: i64) {
+pub fn value_iteration(map: &mut ValueMap, end: Coord, gamma: i64) {
     let theta: i64 = 0; // probably have to change this
 
-    'value_loop: loop {
-        let mut delta: i64 = 0;
-        let keys: Vec<(Coord, Direction)> = map.map.values()
-            .filter(|st| st.typ != '#' && st.typ != 'E')
-            .map(|st| (st.pos, st.dir))
-            .collect();
+    let keys: Vec<(Coord, Direction)> = reverse_states(map, end).into_iter()
+    .filter(|st| st.typ != '#' && st.typ != 'E')
+    .map(|st| (st.pos, st.dir))
+    .collect();
 
-        for key in keys {
+    let mut iterations = 0;
+    'value_loop: loop {
+        iterations += 1;
+        let mut delta: i64 = 0;
+
+        for key in keys.iter() {
             let curr_state: &State = map.map.get(&key).unwrap();
             let old_val: i64 = curr_state.val;
             let new_val: i64 = max_action_value(map, curr_state, gamma);
@@ -75,7 +78,7 @@ pub fn value_iteration(map: &mut ValueMap, gamma: i64) {
             break 'value_loop;
         }
     }
-
+    println!("Iterations: {}", iterations);
 }
 
 pub fn max_action_value(map: &ValueMap, st: &State, gamma: i64) -> i64 {
@@ -118,6 +121,51 @@ fn construct_empty_value_map(content: &str) -> (ValueMap, Coord, Coord) {
     (ValueMap{map:value_map}, start_pos, end_pos)
 }
 
+use queues::*;
+fn reverse_states(map: &ValueMap, end: Coord) -> Vec<&State> {
+    let mut results: Vec<&State> = vec![];
+    // load initial coords
+    let mut coords_to_search: Queue<Coord> = queue![];
+    let mut coords_seen: HashSet<Coord> = HashSet::new();
+    for coord in non_wall_neighbors(map, end) {
+        coords_to_search.add(coord).unwrap();
+        coords_seen.insert(coord);
+    }
+    // go backwards
+    while coords_to_search.size() != 0 {
+        let coord_to_scan: Coord = coords_to_search.remove().unwrap();
+
+        for dir in Direction::iter() {
+            if let Some(state_to_push) = map.map.get(&(coord_to_scan, dir)){
+                results.push(state_to_push);
+            };
+        }
+        // add neighbors haven't seen
+        for coord in non_wall_neighbors(map, coord_to_scan)
+                                                .iter()
+                                                .filter(|c| !coords_seen.contains(c))
+                                                .collect::<Vec<&Coord>>() {
+            coords_to_search.add(coord.clone()).unwrap();
+            coords_seen.insert(coord.clone());
+        }
+    }
+
+    results
+}
+
+fn non_wall_neighbors(map: &ValueMap, coord: Coord) -> Vec<Coord> {
+    let mut results: Vec<Coord> = vec![];
+
+    for dir in Direction::iter() {
+        let new_coord: Coord = coord.go(dir);
+        if let Some(st) =  map.map.get(&(new_coord, dir)){
+            if st.typ == '.' || st.typ == 'S' {
+                results.push(new_coord);
+            }
+        };
+    }
+    return results
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Action {
@@ -248,8 +296,8 @@ mod test {
 #.E#
 #S.#
 ####";
-        let (mut map, start, _) = parse_input(input);
-        value_iteration(&mut map, 1);
+        let (mut map, start, end) = parse_input(input);
+        value_iteration(&mut map, end, 1);
         let val = trace_path(&map, start, 1);
         assert_eq!(1002, val);
     }

@@ -89,7 +89,7 @@ fn parse_day_9_input() -> Vec<DiskBlock> {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-struct DiskBlock {
+pub struct DiskBlock {
     is_free: bool,
     id: Option<u64>,
     // pos and size are on same scale
@@ -99,13 +99,13 @@ struct DiskBlock {
 }
 
 impl DiskBlock {
-    fn print(&self) -> String {
+    pub fn print(&self) -> String {
         let chr: String = if self.id.is_none() { ".".to_string() } else {  self.id.unwrap().to_string() };
         vec![chr.chars().nth(0).unwrap(); self.size].iter().collect()
     }
 }
 
-fn print_blocks(blocks: &Vec<DiskBlock>) {
+pub fn print_blocks(blocks: &Vec<DiskBlock>) {
     let mut st: String = String::new();
     blocks.iter().map(|x| x.print()).for_each(|x| st.push_str(&x));
     println!("{}", st);

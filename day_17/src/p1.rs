@@ -18,9 +18,9 @@ pub fn parse_input(content: &str) -> (Computer, String) {
     let lines: Vec<String> = content.lines().map(|s| s.to_string()).collect::<Vec<String>>();
     assert_eq!(lines.len(), 5);
 
-    let reg_a: u32 = lines[0][12..lines[0].len()].parse::<u32>().unwrap();
-    let reg_b: u32 = lines[1][12..lines[1].len()].parse::<u32>().unwrap();
-    let reg_c: u32 = lines[2][12..lines[2].len()].parse::<u32>().unwrap();
+    let reg_a: u64 = lines[0][12..lines[0].len()].parse::<u64>().unwrap();
+    let reg_b: u64 = lines[1][12..lines[1].len()].parse::<u64>().unwrap();
+    let reg_c: u64 = lines[2][12..lines[2].len()].parse::<u64>().unwrap();
 
     let input: Vec<u8> = input_from_str(&lines[4][9..lines[4].len()].to_string());
 

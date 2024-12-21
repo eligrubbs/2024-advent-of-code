@@ -28,9 +28,9 @@ impl Instruction {
 
 #[derive(Debug, Clone)]
 pub struct Computer {
-    reg_a: u32,
-    reg_b: u32,
-    reg_c: u32,
+    reg_a: u64,
+    reg_b: u64,
+    reg_c: u64,
 
     intsr_ptr: usize,
     /// input contains instructions AND operands in a vector  
@@ -72,7 +72,7 @@ impl Computer {
     }
 
     /// Assumes operand is a number in range [0,7)
-    pub fn operand_to_combo(&self, operand: u8) -> u32 {
+    pub fn operand_to_combo(&self, operand: u8) -> u64 {
         assert!(operand < 7);
         match operand {
             0 => 0, 1 => 1, 2=> 2, 3 => 3,
@@ -84,7 +84,7 @@ impl Computer {
         }
     }
 
-    pub fn new(reg_a: u32, reg_b: u32, reg_c: u32, input: Vec<u8>) -> Computer {
+    pub fn new(reg_a: u64, reg_b: u64, reg_c: u64, input: Vec<u8>) -> Computer {
         Computer {
             reg_a, reg_b, reg_c,
             intsr_ptr: 0, input,
@@ -142,7 +142,7 @@ impl Computer {
 
     /// operand is a literal operand
     fn bxl(&mut self, operand: u8) {
-        self.reg_b = self.reg_b ^ (operand as u32);
+        self.reg_b = self.reg_b ^ (operand as u64);
     }
 
     /// operand is a raw combo operand
@@ -171,7 +171,7 @@ impl Computer {
         } else {
             self.has_output_something = true;
         }
-        let output: u32 = self.operand_to_combo(operand) % 8;
+        let output: u64 = self.operand_to_combo(operand) % 8;
         self.output.push_str(&format!("{}", output).to_string());
     }
 
@@ -187,9 +187,9 @@ impl Computer {
 
     /// operand is a raw combo operand
     /// numerator is assumed to be register A
-    fn dv(&self, operand: u8) -> u32 {
-        let operand: u32 = self.operand_to_combo(operand);
-        self.reg_a.div(2_u32.pow(operand))
+    fn dv(&self, operand: u8) -> u64 {
+        let operand: u64 = self.operand_to_combo(operand);
+        self.reg_a.div(2_u32.pow(operand as u32) as u64)
     }
 }
 

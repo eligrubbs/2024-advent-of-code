@@ -11,7 +11,7 @@ pub fn day_19_p1_soln() -> usize {
 
     let (pats, goals) = parse_input(&raw);
 
-    let results: Vec<u32> = check_all_goals(&goals, &pats);
+    let results: Vec<u64> = check_all_goals(&goals, &pats);
 
     results.iter().filter(|&&b| b != 0 ).count()
 }
@@ -30,27 +30,25 @@ pub fn parse_input(content: &str) -> (HashSet<String>, Vec<String>) {
 }
 
 
-pub fn check_all_goals(goals: &Vec<String>, pats: &HashSet<String>) -> Vec<u32> {
-    let mut results: Vec<u32> = vec![];
-    let mut iters = 0;
-    let mut cache: HashMap<String, u32> = HashMap::new();
+pub fn check_all_goals(goals: &Vec<String>, pats: &HashSet<String>) -> Vec<u64> {
+    let mut results: Vec<u64> = vec![];
+    let mut cache: HashMap<String, u64> = HashMap::new();
+
     for goal in goals {
-        iters += 1;
-        println!("{}", iters);
         results.push(can_make(goal, pats, &mut cache));
     }
     results
 }
 
 
-pub fn can_make(goal: &String, pats: &HashSet<String>, cache: &mut HashMap<String, u32>) -> u32 {
+pub fn can_make(goal: &String, pats: &HashSet<String>, cache: &mut HashMap<String, u64>) -> u64 {
     if cache.contains_key(goal) {return cache.get(goal).unwrap().clone(); }
     if goal.is_empty() { return 1; }
-    let mut total: u32 = 0;
+    let mut total: u64 = 0;
     for pat in pats {
         if goal.starts_with(pat) {
             let new_goal: String = goal.strip_prefix(pat).unwrap().to_string();
-            let result: u32 = can_make(&new_goal, pats, cache);
+            let result: u64 = can_make(&new_goal, pats, cache);
             cache.insert(new_goal, result);
             total += result;
         }
@@ -66,7 +64,7 @@ mod test {
     #[test]
     fn test_can_make() {
         let pats: HashSet<String> = HashSet::from(["r".to_string()]);
-        let mut cache: HashMap<String, u32> = HashMap::new();
+        let mut cache: HashMap<String, u64> = HashMap::new();
 
         assert!(can_make(&"r".to_string(), &pats, &mut cache) > 0);
         assert!(can_make(&"rr".to_string(), &pats, &mut cache) > 0);

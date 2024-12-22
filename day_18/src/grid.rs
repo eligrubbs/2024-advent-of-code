@@ -44,7 +44,7 @@ impl Grid {
         result
     }
 
-    pub fn pos_in_bounds(&self, coord: &Coord) -> bool {
+    fn pos_in_bounds(&self, coord: &Coord) -> bool {
         coord.r >= 0 && coord.r < (self.height as i32) && coord.c >= 0 && coord.c < (self.width as i32)
     }
 
@@ -90,15 +90,19 @@ impl Grid {
         }
         res
     }
+
+    /// turn a position into a blocked position.
+    /// sets the value to zero (although i am pretty sure it won't matter since blocked spaces are unreachable)
+    pub fn add_block(&mut self, coord: &Coord) {
+        self.blocks[coord.r as usize][coord.c as usize] = true;
+        self.value_map[coord.r as usize][coord.c as usize] = 0;
+    }
 }
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIter)]
 pub enum Direction {
-    N,
-    E,
-    S,
-    W
+    N, E, S, W
 }
 
 impl fmt::Display for Direction {
@@ -113,6 +117,7 @@ impl Direction {
         use Direction::*;
         (match self { N => "N", E => "E", S => "S", W => "W", }).to_string()
     }
+
     pub fn from(s: &str) -> Result<Direction, String> {
         use Direction::*;
         match s {
@@ -170,10 +175,8 @@ impl Coord {
     pub fn go(&self, dir: Direction) -> Coord {
         use Direction::*;
         match dir {
-            N => Coord::from((self.r-1, self.c)),
-            E => Coord::from((self.r, self.c+1)),
-            S => Coord::from((self.r+1, self.c)),
-            W => Coord::from((self.r, self.c-1)),
+            N => Coord::from((self.r-1, self.c)), E => Coord::from((self.r, self.c+1)),
+            S => Coord::from((self.r+1, self.c)), W => Coord::from((self.r, self.c-1)),
         }
     }
 }

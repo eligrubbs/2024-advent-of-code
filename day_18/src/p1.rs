@@ -16,7 +16,7 @@ pub fn day_18_p1_soln() -> usize {
 
     value_iteration(&mut grid);
 
-    let steps: Vec<Coord> = steps_to_end(&grid, 1);
+    let steps: Vec<Coord> = steps_to_end(&grid, 1).unwrap();
 
     steps.len()-1
 }
@@ -24,8 +24,8 @@ pub fn day_18_p1_soln() -> usize {
 pub fn parse_input_p1(content: &str) -> HashSet<Coord> {
     content.lines().take(1024)
         .map(|line|{
-            let r_val = line.split(",").nth(0).unwrap().parse::<usize>().unwrap();
-            let c_val = line.split(",").nth(1).unwrap().parse::<usize>().unwrap();
+            let c_val = line.split(",").nth(0).unwrap().parse::<usize>().unwrap();
+            let r_val = line.split(",").nth(1).unwrap().parse::<usize>().unwrap();
             Coord::from_usize((r_val, c_val))
         }).collect::<HashSet<Coord>>()
 }
@@ -37,12 +37,15 @@ pub fn grid_from_input(content: &str, width: usize, height: usize) -> Grid {
 
 
 /// find the optimal value of being in each state
+/// returns true/false based on whether it converged or not
 pub fn value_iteration(g: &mut Grid) {
 
     let theta: i64 = 0; 
     let gamma: i64 = 1;
+    let min_val: i64 = -500; // prevents infinite loops in unreachable spaces
 
     'value_loop: loop {
+
         let mut delta: i64 = 0;
 
         for row in (0..g.height).rev() { for col in (0..g.width).rev() {
@@ -51,6 +54,8 @@ pub fn value_iteration(g: &mut Grid) {
             if g.blocks[row][col] || curr_coord == g.end_state { continue; }
 
             let old_val: i64 = g.value_map[row][col];
+            if old_val <= min_val { delta = max(delta, 0); continue; }
+
             let new_val: i64 = g.max_action_value(&curr_coord, gamma);
             g.value_map[row][col] = new_val;
 
@@ -60,19 +65,26 @@ pub fn value_iteration(g: &mut Grid) {
 
         if delta <= theta { break 'value_loop; }
     }
-
 }
 
-pub fn steps_to_end(g: &Grid, gamma: i64) -> Vec<Coord> {
+/// Returns None if the end can't be found
+pub fn steps_to_end(g: &Grid, gamma: i64) -> Option<Vec<Coord>> {
     let mut curr_pos: Coord = Coord::from((0,0));
     let mut steps: Vec<Coord> = vec![curr_pos];
+    let mut prev_pos: Coord = Coord::from((-1,-1));
 
-    while curr_pos != g.end_state {
+    let mut iterations = 0;
+
+    while curr_pos != g.end_state && iterations < 1000{
+        iterations += 1;
         let (_, next_pos) = g.best_action_and_next_pos_at(&curr_pos, gamma);
+        if next_pos == prev_pos {iterations = 1001; break;};
+        prev_pos = curr_pos;
         curr_pos = next_pos;
         steps.push(curr_pos);
     }
-    steps
+
+    if iterations < 1000 { Some(steps) } else { None }
 }
 
 
@@ -88,7 +100,7 @@ mod test {
         let mut grid: Grid = grid_from_input(input, 2, 2);
 
         value_iteration(&mut grid);
-        assert_eq!(grid.value_map, vec![vec![-2,0], vec![-1,0]]);
+        assert_eq!(grid.value_map, vec![vec![-2,-1], vec![0,0]]);
     }
 
     #[test]

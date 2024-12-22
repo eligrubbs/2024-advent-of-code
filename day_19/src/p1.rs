@@ -43,35 +43,6 @@ pub fn check_all_goals(goals: &Vec<String>, pats: &HashSet<String>) -> Vec<u32> 
 }
 
 
-/// check if the goal can be build using the patterns.
-/// 
-/// Algorithm:
-/// 1. Check each slice (char 0), (chars 0,1)... (whole String)
-///     - if this slice matches a pattern, change goal to rest of string an recurse
-/// 
-// pub fn can_make(goal: &String, pats: &HashSet<String>, cache: &mut HashMap<String, u32>) -> u32 {
-//     if goal.len() == 1 { // base case
-//         if pats.contains(goal) {1} else {0}
-//     } else if cache.contains_key(goal){ // I have seen it before
-//         cache.get(goal).unwrap().clone()
-//     } else {
-//         let mut total = 0;
-//         for pat in pats {
-//             if goal.starts_with(pat) {
-//                 let rest_of_goal: String = goal[pat.len()..goal.len()].to_string();
-//                 let num: u32 = can_make(&rest_of_goal, pats, cache);
-//                 if num > 0 {
-//                     // save that I can make the next part
-//                     cache.insert(rest_of_goal, num);
-//                     total += num;
-//                 }
-//             }
-//         }
-//         total
-//     }
-// }
-
-
 pub fn can_make(goal: &String, pats: &HashSet<String>, cache: &mut HashMap<String, u32>) -> u32 {
     if cache.contains_key(goal) {return cache.get(goal).unwrap().clone(); }
     if goal.is_empty() { return 1; }

@@ -16,7 +16,7 @@ impl Grid {
         let mut result: HashSet<(Coord, Direction)> = HashSet::new();
         for dir in Direction::iter() {
             let neighbor: Coord = coord.go(dir);
-            if *self.typs.get(&neighbor).unwrap() != '#' {
+            if let Some(_neigh) = self.typs.get(&neighbor) {
                 result.insert((neighbor, dir));
             }
         }
@@ -65,6 +65,13 @@ impl Direction {
             N => W, E => N, S => E, W => S
         }
     }
+
+    pub fn opp(&self) -> Direction {
+        use Direction::*;
+        match self {
+            N => S, E => W, S => N, W => E
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -102,5 +109,9 @@ impl Coord {
             S => Coord::from((self.r+1, self.c)),
             W => Coord::from((self.r, self.c-1)),
         }
+    }
+
+    pub fn manhat_dist(&self, other: &Coord) -> usize {
+        self.r.abs_diff(other.r) + self.c.abs_diff(other.c)
     }
 }

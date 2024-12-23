@@ -9,7 +9,9 @@ use crate::grid::{Coord, Direction, Grid};
 I did not read the spec correctly.
 
 There is only 1 path, so no path-finding is neccesary.
-Only need to know distance from start for each dot
+Only need to know distance from start for each dot.
+
+Somehow off-by-one. Just decided to re-write it.
 
 */
 

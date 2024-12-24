@@ -1,6 +1,6 @@
 use std::cmp::{max, min};
 use std::collections::HashSet;
-use std::{collections::HashMap, env};
+use std::env;
 use std::fs::read_to_string;
 
 use crate::network::Connection;
